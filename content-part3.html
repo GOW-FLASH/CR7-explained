@@ -983,6 +983,89 @@
             </div>
         </section>
     </div>
+<!-- زر الانتقال إلى الاختبارات -->
+<div class="exam-redirect-section" style="text-align: center; padding: 40px 20px; background: linear-gradient(135deg, #2c3e50, #3498db); border-radius: 10px; margin: 30px 0; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+    <div class="redirect-content" style="color: white;">
+        <h2 style="color: white; margin-bottom: 20px; font-size: 28px;">
+            <i class="fas fa-graduation-cap" style="margin-left: 10px;"></i>
+            الآن حان وقت الاختبار
+        </h2>
+        
+        <p style="font-size: 18px; margin-bottom: 25px; line-height: 1.6;">
+            لقد تعلمت المفاهيم الأساسية للقيادة والإدارة. الآن يمكنك اختبار معرفتك<br>
+            من خلال الاختبارات التفاعلية التي تم إعدادها خصيصاً لك.
+        </p>
+        
+        <div class="redirect-stats" style="display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; margin: 30px 0;">
+            <div class="stat" style="text-align: center;">
+                <div class="stat-number" style="font-size: 32px; font-weight: bold; color: #f1c40f;">✓</div>
+                <div class="stat-label" style="font-size: 14px;">تمت دراسة المادة</div>
+            </div>
+            
+            <div class="stat" style="text-align: center;">
+                <div class="stat-number" style="font-size: 32px; font-weight: bold; color: #f1c40f;">📝</div>
+                <div class="stat-label" style="font-size: 14px;">اختبار تفاعلي</div>
+            </div>
+            
+            <div class="stat" style="text-align: center;">
+                <div class="stat-number" style="font-size: 32px; font-weight: bold; color: #f1c40f;">⏱️</div>
+                <div class="stat-label" style="font-size: 14px;">تقييم فوري</div>
+            </div>
+        </div>
+        
+        <a href="https://gow-flash.github.io/CR7-EXAMS/" 
+           target="_blank"
+           class="exam-button"
+           style="display: inline-flex;
+                  align-items: center;
+                  gap: 15px;
+                  padding: 18px 40px;
+                  background: linear-gradient(to right, #e74c3c, #c0392b);
+                  color: white;
+                  text-decoration: none;
+                  border-radius: 50px;
+                  font-size: 20px;
+                  font-weight: bold;
+                  transition: all 0.3s ease;
+                  box-shadow: 0 5px 15px rgba(231, 76, 60, 0.4);
+                  border: none;
+                  cursor: pointer;">
+            <i class="fas fa-external-link-alt"></i>
+            ابدأ الاختبار الآن
+        </a>
+        
+        <p style="margin-top: 20px; font-size: 14px; opacity: 0.9;">
+            سيتم فتح صفحة جديدة تحتوي على جميع الاختبارات المتاحة
+        </p>
+    </div>
+</div>
+
+<style>
+    .exam-button:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(231, 76, 60, 0.6);
+        background: linear-gradient(to right, #c0392b, #e74c3c);
+    }
+    
+    .exam-button:active {
+        transform: translateY(0);
+    }
+    
+    @media (max-width: 768px) {
+        .exam-redirect-section {
+            padding: 30px 15px;
+        }
+        
+        .redirect-stats {
+            gap: 20px;
+        }
+        
+        .exam-button {
+            padding: 15px 30px;
+            font-size: 18px;
+        }
+    }
+</style>
 </div>
 
 <style>
