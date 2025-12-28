@@ -194,5 +194,249 @@
 
     <script src="script.js"></script>
     <script src="data.js"></script>
+    <!-- أضف هذا قبل </body> في ملف index.html -->
+
+<script type="module">
+// ==================== استيراد مكتبات Firebase ====================
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+import { getDatabase, ref, set, push, onValue, runTransaction } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-database.js";
+
+// ==================== إعداد Firebase ====================
+const firebaseConfig = {
+  apiKey: "AIzaSyBJ82IqtIyxpruIGp7fXqpREtWvG0hw7oA",
+  authDomain: "cr7-academy-visitors.firebaseapp.com",
+  databaseURL: "https://cr7-academy-visitors-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "cr7-academy-visitors",
+  storageBucket: "cr7-academy-visitors.firebasestorage.app",
+  messagingSenderId: "285727297042",
+  appId: "1:285727297042:web:73534c86cd11047d7c12cb"
+};
+
+// تهيئة Firebase
+const app = initializeApp(firebaseConfig);
+const database = getDatabase(app);
+
+// ==================== دوال التتبع ====================
+
+// دالة لحفظ بيانات الزائر
+async function saveVisitor(name) {
+    try {
+        const visitorData = {
+            name: name,
+            timestamp: new Date().toISOString(),
+            page: window.location.href,
+            userAgent: navigator.userAgent.substring(0, 100) // أول 100 حرف فقط
+        };
+        
+        // إنشاء مرجع جديد تلقائياً
+        const visitorsRef = ref(database, 'visitors');
+        const newVisitorRef = push(visitorsRef);
+        
+        await set(newVisitorRef, visitorData);
+        console.log('✅ تم حفظ بيانات الزائر:', name);
+        
+        // إخفاء النافذة المنبثقة
+        document.getElementById('nameModal')?.remove();
+        
+        // زيادة العداد
+        await updateVisitorCount();
+        
+    } catch (error) {
+        console.error('❌ خطأ في حفظ بيانات الزائر:', error);
+        alert('حدث خطأ في التسجيل. حاول مرة أخرى.');
+    }
+}
+
+// دالة لزيادة عداد الزوار
+async function updateVisitorCount() {
+    try {
+        const countRef = ref(database, 'visitorCount');
+        await runTransaction(countRef, (currentCount) => {
+            return (currentCount || 0) + 1;
+        });
+    } catch (error) {
+        console.error('❌ خطأ في زيادة العداد:', error);
+    }
+}
+
+// دالة لعرض النافذة المنبثقة
+function showNameModal() {
+    // إنشاء هيكل النافذة
+    const modalHTML = `
+    <div id="nameModal" style="
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.85);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+        font-family: Arial, sans-serif;
+    ">
+        <div style="
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+            color: white;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        ">
+            <div style="font-size: 60px; margin-bottom: 20px;">🎓</div>
+            <h2 style="margin: 0 0 15px 0; font-size: 28px;">مرحباً بك في CR7 ACADEMY!</h2>
+            <p style="margin-bottom: 25px; font-size: 16px; opacity: 0.9;">
+                يرجى إدخال اسمك للبدء في استعراض المحتوى التعليمي
+            </p>
+            
+            <input type="text" id="visitorName" 
+                   placeholder="اكتب اسمك هنا..." 
+                   style="
+                        padding: 15px;
+                        width: 80%;
+                        margin: 10px 0;
+                        border: none;
+                        border-radius: 10px;
+                        font-size: 16px;
+                        text-align: center;
+                        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                   ">
+            <br>
+            <button onclick="window.submitVisitorName()" 
+                    style="
+                        padding: 15px 40px;
+                        margin-top: 20px;
+                        background: white;
+                        color: #667eea;
+                        border: none;
+                        border-radius: 10px;
+                        font-size: 18px;
+                        font-weight: bold;
+                        cursor: pointer;
+                        transition: transform 0.2s;
+                        box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+                    "
+                    onmouseover="this.style.transform='scale(1.05)'"
+                    onmouseout="this.style.transform='scale(1)'">
+                🚀 دخول إلى الموقع
+            </button>
+            
+            <p style="margin-top: 20px; font-size: 12px; opacity: 0.7;">
+                سيتم حفظ اسمك فقط لأغراض إحصائية
+            </p>
+        </div>
+    </div>`;
+    
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+}
+
+// جعل الدوال متاحة عالمياً
+window.submitVisitorName = function() {
+    const nameInput = document.getElementById('visitorName');
+    const name = nameInput?.value?.trim();
+    
+    if (name && name.length > 0) {
+        saveVisitor(name);
+    } else {
+        alert('⚠️ يرجى إدخال اسمك أولاً');
+        nameInput?.focus();
+    }
+};
+
+// دالة لتحديث العداد الحي على الصفحة
+function setupLiveCounter() {
+    const counterRef = ref(database, 'visitorCount');
+    
+    onValue(counterRef, (snapshot) => {
+        const count = snapshot.val() || 0;
+        const counterElement = document.getElementById('liveCounter');
+        
+        if (counterElement) {
+            counterElement.textContent = count.toLocaleString('ar-EG');
+        } else {
+            // إنشاء عنصر العداد إذا لم يكن موجوداً
+            const counterDiv = document.createElement('div');
+            counterDiv.innerHTML = `
+                <div style="
+                    position: fixed;
+                    bottom: 20px;
+                    right: 20px;
+                    background: rgba(102, 126, 234, 0.9);
+                    color: white;
+                    padding: 12px 20px;
+                    border-radius: 25px;
+                    font-family: Arial, sans-serif;
+                    font-size: 14px;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                    z-index: 1000;
+                    backdrop-filter: blur(10px);
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                ">
+                    <span style="font-size: 18px;">👥</span>
+                    <span>عدد الزوار: <strong id="liveCounter">${count}</strong></span>
+                </div>
+            `;
+            document.body.appendChild(counterDiv);
+        }
+    });
+}
+
+// ==================== التشغيل التلقائي ====================
+document.addEventListener('DOMContentLoaded', async function() {
+    // تحقق إذا كان هذا أول زيارة
+    if (!localStorage.getItem('cr7_has_visited')) {
+        // عرض النافذة بعد ثانيتين
+        setTimeout(() => {
+            showNameModal();
+        }, 2000);
+        
+        localStorage.setItem('cr7_has_visited', 'true');
+    }
+    
+    // زيادة العداد لكل زيارة
+    await updateVisitorCount();
+    
+    // إعداد العداد الحي
+    setupLiveCounter();
+    
+    // إضافة CSS للزر
+    const style = document.createElement('style');
+    style.textContent = `
+        button:hover { transform: scale(1.05); }
+        button:active { transform: scale(0.98); }
+        #visitorName:focus { outline: 3px solid #4CAF50; }
+    `;
+    document.head.appendChild(style);
+    
+    console.log('🚀 نظام تتبع CR7 Academy جاهز للعمل!');
+});
+
+// ==================== دوال الإدارة (اختياري) ====================
+// لاستخدامها في لوحة التحكم admin.html
+window.firebaseAdmin = {
+    getVisitors: async function() {
+        const visitorsRef = ref(database, 'visitors');
+        return new Promise((resolve) => {
+            onValue(visitorsRef, (snapshot) => {
+                resolve(snapshot.val());
+            }, { onlyOnce: true });
+        });
+    },
+    
+    getTotalCount: async function() {
+        const countRef = ref(database, 'visitorCount');
+        return new Promise((resolve) => {
+            onValue(countRef, (snapshot) => {
+                resolve(snapshot.val() || 0);
+            }, { onlyOnce: true });
+        });
+    }
+};
+</script>
 </body>
 </html>
